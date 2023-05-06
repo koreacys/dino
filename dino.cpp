@@ -1,6 +1,6 @@
 ﻿//[C/C++ game] very simple google dinosaur. (by. BlockDMask)
 //2019.12.03 (v2.0)점수 추가, 충돌처리 추가.
-//소스코드 해석 & 바꿔보기 과제
+//소스코드 해석 & 바꿔보기 과제~
 #include<stdio.h> //헤더파일 stdio.h 추가
 #include<windows.h> //헤더파일 windows.h 추가
 #include<conio.h> //헤더파일 conio.h 추가
