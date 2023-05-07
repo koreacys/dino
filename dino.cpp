@@ -35,32 +35,24 @@ int GetKeyDown()
 	return 0;
 }
 
+extern "C" void Dino_body_draw(); //공룡 몸체 그리는 C함수 선언
+extern "C" void Dino_Rleg_draw(); //공룡 오른발 그리는 C함수 선언
+extern "C" void Dino_Lleg_draw(); //공룡 왼발 그리는 C함수 선언
+
 //공룡을 그리는 함수
 void DrawDino(int dinoY)
 {
 	GotoXY(0, dinoY); // 공룡의 x좌표는 0이다
 	static bool legFlag = true; // legFlag는 참이다
-	printf("        $$$$$$$ \n"); //42-52줄 공룡 모형 출력
-	printf("       $$ $$$$$$\n");
-	printf("       $$$$$$$$$\n");
-	printf("$      $$$      \n");
-	printf("$$     $$$$$$$  \n");
-	printf("$$$   $$$$$     \n");
-	printf(" $$  $$$$$$$$$$ \n");
-	printf(" $$$$$$$$$$$    \n");
-	printf("  $$$$$$$$$$    \n");
-	printf("    $$$$$$$$    \n");
-	printf("     $$$$$$     \n");
+	Dino_body_draw();
 	if (legFlag) //legFlag이면
 	{
-		printf("     $    $$$    \n"); //공룡발 모형 출력
-		printf("     $$          ");
+		Dino_Rleg_draw();
 		legFlag = false; //legFlag가 거짓이므로 
 	}
 	else //아래의 모형이 출력된다
 	{
-		printf("     $$$  $     \n"); //공룡발 모형 출력
-		printf("          $$    ");
+		Dino_Lleg_draw();
 		legFlag = true; //legFlag는 참이다
 	}
 }
