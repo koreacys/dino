@@ -10,13 +10,7 @@
 	7. GetKeyDown을 받던 if문을 switch문을 통해 구현
 	8. 새 장애물 추가
 	9. x키를 통해 엎드린 공룡 추가
-	10. 2단 점프 구현(화면 크기 키움)
-	
-	현재 오류가 있는 함수들
-	->   5. 나무위치 랜덤(랜덤으로 나오지 않음)
-		10. 2단 점프 (점프를 2번하면 그 뒤로 점프가 안되는 상황)
-		원인 알 수 없음(화면을 키움으로서 각 장애물의 
-			위치를 수정한 것이 원인으로 추정): 나무 장애물을 점프로 피해도 목숨이 감소되는 현상 발견(새 = 목숨감소X, 바로 죽게 코딩함, 오류아님)*/
+	10. 2단 점프 구현(화면 크기 키움)*/
 
 #include<iostream> //헤더파일 iostream 추가
 using namespace std; //cout을 사용할 때, 앞에 std::생략 가능
@@ -72,15 +66,15 @@ void DrawDino(int dinoY)
 {
 	GotoXY(0, dinoY); // 공룡의 x좌표는 0이다
 	static bool legFlag = true; // legFlag는 참이다
-	Dino_body_draw();
+	Dino_body_draw(); //공룡 몸체 그리는 c함수 부름
 	if (legFlag) //legFlag이면
 	{
-		Dino_Rleg_draw();
+		Dino_Rleg_draw(); //공룡 오른발 그리는 c함수 부름
 		legFlag = false; //legFlag가 거짓이므로 
 	}
 	else //아래의 모형이 출력된다
 	{
-		Dino_Lleg_draw();
+		Dino_Lleg_draw(); //공룡 왼발 그리는 c함수 부름
 		legFlag = true; //legFlag는 참이다
 	}
 }
@@ -134,11 +128,11 @@ void DrawBird(int birdX)
 void DrawHeart(int heartX)
 {
 	GotoXY(heartX, HERAT_BOTTOM_Y);
-	printf("$$$ $$$");
+	cout<<"$$$ $$$";
 	GotoXY(heartX, HERAT_BOTTOM_Y + 1);
-	printf(" $$$$$");
+	cout<<" $$$$$";
 	GotoXY(heartX, HERAT_BOTTOM_Y + 2);
-	printf("   $ ");
+	cout<<"   $ ";
 }
 
 
@@ -169,7 +163,7 @@ public: //public으로 어디서든 접근 가능하게 선언
 	{
 		GotoXY(0, 0);
 		printf("treeX : %d, dinoY : %d, life : %d", treeX, dinoY, life);//우측 상단에 목숨의 수를 추가로 출력
-		if (treeX <= 8 && treeX >= 4 && dinoY > 8) {
+		if (treeX <= 8 && treeX >= 4 && dinoY > 18) {
 
 			return true;
 		}
@@ -220,17 +214,19 @@ int main() //main 함수 시작
 	{
 		//게임 시작시 초기화
 		bool isJumping = false; //점프를 하지 않음.
+		bool isDoubleJumping = false; //더블 점프를 하지 않음.
 		bool isBottom = true; //바닥이다.
 		bool isSliding = false; //엎드리지 않음.
 		const int gravity = 3; //중력 = 3
+		bool isCollisionDetected = false;  // 충돌 감지 여부
 
 		int dinoY = DINO_BOTTOM_Y; //공룡의 y축 함수를 공룡에 지정
 		int dinoZ = SDINO_BOTTOM_Y; //공룡이 엎드릴 때의 y축 함수를 공룡에 지정
 		int treeX = TREE_BOTTOM_X; //나무의 x축 함수를 나무에 지정
 		int birdX = BIRD_BOTTOM_X; //새의 x축 함수를 새에게 지정
-		int heartX = HERAT_BOTTOM_X;
+		int heartX = HERAT_BOTTOM_X; //하트의 x축 함수를 하트에 지정
 		bool showTree = true; // 나무를 보여줄지 여부
-		bool isDoubleJumping = false; //더블 점프를 하지 않음.
+		
 
 		int score = 0; //점수를 0으로 초기화
 		int life = 3;   //목숨 갯수 지정
@@ -243,31 +239,51 @@ int main() //main 함수 시작
 		clock_t jumpTime = clock(); // 점프가 시작된 시간
 		while (true)	//한 판에 대한 루프
 		{
-			if (isCollision.isCollision(treeX, dinoY, life)) {
-				life--;         //장애물에 접촉하면 목숨 감소
-				if (life == 0) break;   //목숨이 없으면 게임오버
+			if (isCollision.isCollision(treeX, dinoY, life))
+			{
+				if (!isCollisionDetected)  // 충돌이 한 번도 감지되지 않았을 때
+				{
+					life--;  // 생명 1 감소
+					isCollisionDetected = true;  // 충돌 감지 플래그 설정
+				}
+
+				if (life == 0)
+				{
+					DrawGameOver(score);  // 게임 오버 화면 출력
+					break;  // 충돌이 발생하면 게임 루프 종료
+				}
 			}
+			else
+			{
+				isCollisionDetected = false;  // 충돌이 감지되지 않았음을 플래그로 표시
+			}
+
 			//하트와 충돌했을때 10점 추가
 			if (isCollision.isHeartCollision(heartX, dinoY))
 			{
 				score += 10;
+				isCollisionDetected = true;  // 충돌 감지 플래그 설정
+			}
+			else
+			{
+				isCollisionDetected = false;  // 충돌이 감지되지 않았음을 플래그로 표시
 			}
 
 			int key = GetKeyDown(); //키보드 입력을 key로 받는다.
 			switch (key) //z키가 눌리거나 점프중일때의 스위치 케이스문
 			{
 			case 'x': isSliding = !isSliding; break; //엎드린다
-			case 'z': clock_t currentTime = clock(); // 현재 시간을 currentTime 변수에 저장
-				if (currentTime - jumpTime <= 300 && jumpCount < 2) { // 현재 시간과 이전 점프 시간의 차이가 0.3초 이내이고 점프 횟수가 2번 미만인 경우
+			case 'z': clock_t currentTime = clock();
+				if (currentTime - jumpTime <= 300 && jumpCount < 2) {
 					// 0.8초 이내에 연속으로 누르고 점프 횟수가 2번 미만인 경우 더블 점프
-					isDoubleJumping = true; // 더블 점프 상태를 true로 설정
-					jumpCount++; // 점프 횟수를 증가시킴
+					isDoubleJumping = true;
+					jumpCount++;
 				}
-				else if (!isDoubleJumping && jumpCount < 2) { // 더블 점프 상태가 아니고 점프 횟수가 2번 미만인 경우
-					isJumping = true; // 점프 상태를 true로 설정
-					isBottom = false; // 바닥에 닿지 않았음을 나타내는 isBottom 변수를 false로 설정
-					jumpCount++; // 점프 횟수를 증가시킴
-					jumpTime = currentTime; // 이전 점프 시간을 현재 시간으로 갱신
+				else if (!isDoubleJumping && jumpCount < 2) {
+					isJumping = true;
+					isBottom = false;
+					jumpCount++;
+					jumpTime = currentTime;
 				}
 				break;
 			}
@@ -278,7 +294,7 @@ int main() //main 함수 시작
 			}
 
 			//점프중이라면 Y를 감소, 점프가 끝났으면 Y를 증가.
-			if (isJumping) //만약 점프중이라면
+			if (isJumping || isDoubleJumping) //만약 점프 중이거나 더블 점프 중이라면
 			{
 				dinoY -= gravity; //공룡의 중력 감소
 			}
@@ -330,7 +346,7 @@ int main() //main 함수 시작
 
 			else //새를 보여줄 경우
 			{
-				birdX -= 2; //새는 -2씩 이동 (속도를 같게 함)
+				birdX -= 2; //새는 -2씩 이동
 				if (birdX <= 0) //새의 위치가 0보다 작거나 같을 때
 				{
 					birdX = BIRD_BOTTOM_X; //새는 처음의 x좌표로 돌아감
@@ -403,12 +419,15 @@ int main() //main 함수 시작
 				score++;	//스코어 UP(현 스코어에 +1)
 				start = clock();	//시작시간 초기화 (start 클릭시 시간 초기화)
 			}
+			//메세지(문자)를 다시 출력해줌
+			GotoXY(0, 0);
+			cout << "treeX : " << treeX << ", dinoY : " << dinoY<<", life : "<< life;
+			GotoXY(0, 1);
+			cout << "birdX : " << birdX << ", dinoY : " << dinoY;
+			GotoXY(22, 0);
+			cout << "Score : " << score;
 			Sleep(60); // (지연하고자 하는 시간을 0.060초롤 설정)
 			system("cls");	//clear (현재 도스 프롬프트 화면을 지워준다)
-
-			//(v2.0) 점수출력을 1초마다 해주는것이 아니라 항상 출력해주면서, 1초가 지났을때 ++ 해줍니다.
-			GotoXY(22, 0);	//커서를 가운데 위쪽으로 옮긴다. 콘솔창이 cols=100이니까 2*x이므로 22정도 넣어줌
-			cout << "Score : " << score;	//점수 출력해줌.
 		}
 
 		//(v2.0) 게임 오버 메뉴
