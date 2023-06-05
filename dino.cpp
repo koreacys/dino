@@ -25,8 +25,8 @@ using namespace std; //cout을 사용할 때, 앞에 std::생략 가능
 #define TREE_BOTTOM_X 55  //나무가 나타나는 위치의 열(column) 값을 나타냄
 #define BIRD_BOTTOM_Y 20  //새가 나타나는 위치의 행(row) 값을 나타냄
 #define BIRD_BOTTOM_X 55  //새가 나타나는 위치의 열(column) 값을 나타냄
-#define HERAT_BOTTOM_Y 18
-#define HERAT_BOTTOM_X 40
+#define HERAT_BOTTOM_Y 18 //하트가 나타나는 위치의 행(row) 값을 나타냄
+#define HERAT_BOTTOM_X 40 ////하트가 나타나는 위치의 열(column) 값을 나타냄
 
 //콘솔 창의 크기와 제목을 지정하는 함수
 void SetConsoleView() //콘솔 창에 대한 초기 설정을 수행
@@ -61,41 +61,49 @@ extern "C" void Dino_slide_draw(); //엎드린 공룡 그리는 C함수 선언
 extern "C" void SDino_Rleg_draw(); //엎드린 공룡의 오른발 그리는 C함수 선언
 extern "C" void SDino_Lleg_draw(); //엎드린 공룡의 왼발 그리는 C함수 선언
 
-//공룡을 그리는 함수
-void DrawDino(int dinoY)
-{
-	GotoXY(0, dinoY); // 공룡의 x좌표는 0이다
-	static bool legFlag = true; // legFlag는 참이다
-	Dino_body_draw(); //공룡 몸체 그리는 c함수 부름
-	if (legFlag) //legFlag이면
+class Dinodraw {
+public:
+	//공룡을 그리는 함수
+	void DrawDino(int dinoY)
 	{
-		Dino_Rleg_draw(); //공룡 오른발 그리는 c함수 부름
-		legFlag = false; //legFlag가 거짓이므로 
+		GotoXY(0, dinoY); // 공룡의 x좌표는 0이다
+		static bool legFlag = true; // legFlag는 참이다
+		Dino_body_draw(); //공룡 몸체 그리는 c함수 부름
+		if (legFlag) //legFlag이면
+		{
+			Dino_Rleg_draw(); //공룡 오른발 그리는 c함수 부름
+			legFlag = false; //legFlag가 거짓이므로 
+		}
+		else //아래의 모형이 출력된다
+		{
+			Dino_Lleg_draw(); //공룡 왼발 그리는 c함수 부름
+			legFlag = true; //legFlag는 참이다
+		}
 	}
-	else //아래의 모형이 출력된다
-	{
-		Dino_Lleg_draw(); //공룡 왼발 그리는 c함수 부름
-		legFlag = true; //legFlag는 참이다
-	}
-}
+};
 
-void DrowSDino(int dinoZ) //엎드린 공룡을 그리는 함수
-{
-	GotoXY(0, dinoZ); //엎드린 공룡의 좌표
-	Dino_slide_draw(); //엎드린 공룡 그리기
-	static bool legFlag = true; // legFlag는 참이다
-	if (legFlag) //legFlag이면
+class SDinodraw {
+public:
+	void DrowSDino(int dinoZ) //엎드린 공룡을 그리는 함수
 	{
-		SDino_Rleg_draw(); //엎드린 공룡의 오른발 그리기
-		legFlag = false; //legFlag가 거짓이므로 
+		GotoXY(0, dinoZ); //엎드린 공룡의 좌표
+		Dino_slide_draw(); //엎드린 공룡 그리기
+		static bool legFlag = true; // legFlag는 참이다
+		if (legFlag) //legFlag이면
+		{
+			SDino_Rleg_draw(); //엎드린 공룡의 오른발 그리기
+			legFlag = false; //legFlag가 거짓이므로 
+		}
+		else //아래의 모형이 출력된다
+		{
+			SDino_Lleg_draw(); //엎드린 공룡의 왼발 그리기
+			legFlag = true; //legFlag는 참이다
+		}
 	}
-	else //아래의 모형이 출력된다
-	{
-		SDino_Lleg_draw(); //엎드린 공룡의 왼발 그리기
-		legFlag = true; //legFlag는 참이다
-	}
-}
+};
 
+class Crashdraw : public Dinodraw,  public SDinodraw {//다중 상속
+public:
 //나무를 그리는 함수
 void DrawTree(int treeX)
 {
@@ -134,6 +142,7 @@ void DrawHeart(int heartX)
 	GotoXY(heartX, HERAT_BOTTOM_Y + 2);
 	cout<<"   $ ";
 }
+};
 
 
 //(v2.0) 충돌 했을때 게임오버 그려줌
@@ -192,10 +201,7 @@ public: //public으로 어디서든 접근 가능하게 선언
 	//하트와 공룡이 충돌했을때
 	bool isHeartCollision(const int heartX, const int dinoY)
 	{
-
-		GotoXY(0, 0);
-		printf("heartX : %d, dinoY : %d", heartX, dinoY); //이런식으로 적절한 X, Y를 찾습니다.
-		if (heartX <= 6 && heartX >= 4 &&
+		if (heartX <= 8 && heartX >= 2 &&
 			dinoY > 8)
 		{
 			return true;
@@ -219,6 +225,7 @@ int main() //main 함수 시작
 		bool isSliding = false; //엎드리지 않음.
 		const int gravity = 3; //중력 = 3
 		bool isCollisionDetected = false;  // 충돌 감지 여부
+		bool isHeartCollisionDetected = false;
 
 		int dinoY = DINO_BOTTOM_Y; //공룡의 y축 함수를 공룡에 지정
 		int dinoZ = SDINO_BOTTOM_Y; //공룡이 엎드릴 때의 y축 함수를 공룡에 지정
@@ -258,16 +265,7 @@ int main() //main 함수 시작
 				isCollisionDetected = false;  // 충돌이 감지되지 않았음을 플래그로 표시
 			}
 
-			//하트와 충돌했을때 10점 추가
-			if (isCollision.isHeartCollision(heartX, dinoY))
-			{
-				score += 10;
-				isCollisionDetected = true;  // 충돌 감지 플래그 설정
-			}
-			else
-			{
-				isCollisionDetected = false;  // 충돌이 감지되지 않았음을 플래그로 표시
-			}
+			
 
 			int key = GetKeyDown(); //키보드 입력을 key로 받는다.
 			switch (key) //z키가 눌리거나 점프중일때의 스위치 케이스문
@@ -285,7 +283,20 @@ int main() //main 함수 시작
 					jumpCount++;
 					jumpTime = currentTime;
 				}
+				if (isCollision.isHeartCollision(heartX, dinoY)) //수정된 부분
+				{
+					if (!isHeartCollisionDetected)  // 하트와 한 번도 충돌하지 않았을 때
+					{
+						score += 10;
+						isHeartCollisionDetected = true;  // 하트 충돌 감지 플래그 설정
+					}
+				}
+				else
+				{
+					isHeartCollisionDetected = false;  // 하트와 충돌하지 않았음을 플래그로 표시
+				}
 				break;
+				
 			}
 
 			if (isSliding == false) {
@@ -398,19 +409,20 @@ int main() //main 함수 시작
 
 			}
 
+			Crashdraw draw;
 			if (isSliding) { //엎드리는 상태라면
-				DrowSDino(dinoZ); //엎드린 공룡을 그린다
+				draw.DrowSDino(dinoZ); //엎드린 공룡을 그린다
 			}
 			else { //아니라면
-				DrawDino(dinoY); //draw dino, 공룡을 그린다(위의 함수로 부터 부른다.)
+				draw.DrawDino(dinoY); //draw dino, 공룡을 그린다(위의 함수로 부터 부른다.)
 			}
 			if (showTree) { //만약 showTree라면
-				DrawTree(treeX); //draw Tree, 나무를 그린다(위의 함수로 부터 부른다.)
+				draw.DrawTree(treeX); //draw Tree, 나무를 그린다(위의 함수로 부터 부른다.)
 			}
 			else { //아니라면
-				DrawBird(birdX); //draw Bird, 새를 그린다(위의 함수로 부터 부른다.)
+				draw.DrawBird(birdX); //draw Bird, 새를 그린다(위의 함수로 부터 부른다.)
 			}
-			DrawHeart(heartX);      //draw heart
+			draw.DrawHeart(heartX);      //draw heart
 
 			//(v2.0)
 			curr = clock();			//현재시간 받아오기
@@ -426,6 +438,14 @@ int main() //main 함수 시작
 			cout << "birdX : " << birdX << ", dinoY : " << dinoY;
 			GotoXY(22, 0);
 			cout << "Score : " << score;
+			GotoXY(30,0);
+			cout << "하트는 하트 바로 아래에서";
+			GotoXY(30, 1);
+			cout << "z키를 눌러 점프하거나,";
+			GotoXY(30, 2);
+			cout << "한번 점프 후 하트와 겹쳐질때"; 
+			GotoXY(30, 3);
+			cout << "z키를 한번 더 누르면 점수가 오름니다^^";
 			Sleep(60); // (지연하고자 하는 시간을 0.060초롤 설정)
 			system("cls");	//clear (현재 도스 프롬프트 화면을 지워준다)
 		}
