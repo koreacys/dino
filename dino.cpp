@@ -32,7 +32,7 @@ using namespace std; //cout을 사용할 때, 앞에 std::생략 가능
 void SetConsoleView() //콘솔 창에 대한 초기 설정을 수행
 {
 	system("mode con:cols=100 lines=35"); //게임 콘솔 창의 각각 가로와 세로를 정한다
-	system("title Google Dinosaurs. By BlockDMask."); //콘솔 창의 이름을 정한다
+	system("title Google Dinosaurs. 객지생활"); //콘솔 창의 이름을 정한다
 }
 
 //커서의 위치를 x, y로 이동하는 함수
@@ -224,8 +224,8 @@ int main() //main 함수 시작
 		bool isBottom = true; //바닥이다.
 		bool isSliding = false; //엎드리지 않음.
 		const int gravity = 3; //중력 = 3
-		bool isCollisionDetected = false;  // 충돌 감지 여부
-		bool isHeartCollisionDetected = false;
+		bool isCollisionDetected = false;  // 나무 충돌 감지 여부
+		bool isHeartCollisionDetected = false; //하트 충돌 감지 여부
 
 		int dinoY = DINO_BOTTOM_Y; //공룡의 y축 함수를 공룡에 지정
 		int dinoZ = SDINO_BOTTOM_Y; //공룡이 엎드릴 때의 y축 함수를 공룡에 지정
@@ -248,7 +248,7 @@ int main() //main 함수 시작
 		{
 			if (isCollision.isCollision(treeX, dinoY, life))
 			{
-				if (!isCollisionDetected)  // 충돌이 한 번도 감지되지 않았을 때
+				if (!isCollisionDetected)  // 충돌이 감지
 				{
 					life--;  // 생명 1 감소
 					isCollisionDetected = true;  // 충돌 감지 플래그 설정
@@ -273,7 +273,7 @@ int main() //main 함수 시작
 			case 'x': isSliding = !isSliding; break; //엎드린다
 			case 'z': clock_t currentTime = clock();
 				if (currentTime - jumpTime <= 300 && jumpCount < 2) {
-					// 0.8초 이내에 연속으로 누르고 점프 횟수가 2번 미만인 경우 더블 점프
+					// 0.3초 이내에 연속으로 누르고 점프 횟수가 2번 미만인 경우 더블 점프
 					isDoubleJumping = true;
 					jumpCount++;
 				}
@@ -285,7 +285,7 @@ int main() //main 함수 시작
 				}
 				if (isCollision.isHeartCollision(heartX, dinoY)) //수정된 부분
 				{
-					if (!isHeartCollisionDetected)  // 하트와 한 번도 충돌하지 않았을 때
+					if (!isHeartCollisionDetected)  // 하트 충돌
 					{
 						score += 10;
 						isHeartCollisionDetected = true;  // 하트 충돌 감지 플래그 설정
@@ -438,14 +438,18 @@ int main() //main 함수 시작
 			cout << "birdX : " << birdX << ", dinoY : " << dinoY;
 			GotoXY(22, 0);
 			cout << "Score : " << score;
-			GotoXY(30,0);
-			cout << "하트는 하트 바로 아래에서";
-			GotoXY(30, 1);
-			cout << "z키를 눌러 점프하거나,";
-			GotoXY(30, 2);
-			cout << "한번 점프 후 하트와 겹쳐질때"; 
-			GotoXY(30, 3);
-			cout << "z키를 한번 더 누르면 점수가 오름니다^^";
+			GotoXY(29,0);
+			cout << "1. 하트는 하트 바로 아래에서";
+			GotoXY(29, 1);
+			cout << "   z키를 눌러 점프하거나,";
+			GotoXY(29, 2);
+			cout << "   한번 점프 후 하트와 겹쳐질때"; 
+			GotoXY(29, 3);
+			cout << "   z키를 한번 더 누르면 점수가 오름니다^^";
+			GotoXY(29, 4);
+			cout << "2. 새는 한번 부딪치면";
+			GotoXY(29, 5);
+			cout << "   남은 목숨과 상관없이 바로 죽습니다^^";
 			Sleep(60); // (지연하고자 하는 시간을 0.060초롤 설정)
 			system("cls");	//clear (현재 도스 프롬프트 화면을 지워준다)
 		}
